@@ -1,6 +1,6 @@
 # Build and Packaging
 
-This document explains how to build and package the Cimo plugin for production use.
+This document explains how to build and package the KH Images Optimizer plugin for production use.
 
 ## Local release script
 
@@ -38,6 +38,7 @@ The zip is written to `dist/kh-images-optimizer-<version>.zip`, and its SHA256 i
 
 - Node.js 18 or higher
 - npm
+- PHP 8.0 or higher (for php -l and the smoke test in the local release script)
 
 ## Available Scripts
 
@@ -83,7 +84,7 @@ The `build` script now automatically:
 
 The final package includes:
 
-- **Main plugin files**: `cimo.php`, `composer.json`
+- **Main plugin files**: `kh-images.php`, `composer.json`, `readme.txt`, `index.php`
 - **Built assets**: Compiled JavaScript, CSS, and asset files from the build process
 - **PHP source code**: All PHP classes and functionality
 - **Security files**: `index.php` files in every directory to prevent directory browsing
@@ -104,9 +105,9 @@ The following files are excluded from the production package:
 
 The package script creates:
 
-- **Location**: `dist/cimo-{version}.zip`
+- **Location**: `dist/kh-images-optimizer-{version}.zip`
 - **Format**: Standard WordPress plugin zip file
-- **Size**: Optimized for production use (typically 0.01-0.02 MB)
+- **Size**: Optimized for production use (typically about 0.12 MB including built assets)
 
 ## Security Features
 
