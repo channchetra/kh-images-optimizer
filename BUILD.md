@@ -2,6 +2,38 @@
 
 This document explains how to build and package the Cimo plugin for production use.
 
+## Local release script
+
+`scripts/release-local.js` builds a release zip for local, staging, and production use. It runs on Linux, macOS, and Windows with Node.js 18+ and does not require bash.
+
+| Environment | Requirements |
+| --- | --- |
+| `local` | A dirty working tree is allowed, but a warning is printed. |
+| `staging` | The git working tree must be clean (ignored files do not count). |
+| `production` | The git working tree must be clean and the current branch must be `main`. |
+
+```bash
+# Build a local release
+npm run release:local
+
+# Build a staging release
+npm run release:staging
+
+# Build a production release without publishing
+npm run release:production
+
+# Build and publish a production release
+npm run release:production -- --publish
+```
+
+The script lints JavaScript and CSS, runs the PHP smoke test, checks every PHP file with `php -l`, builds the assets, and packages the plugin. Use `--skip-lint` or `--skip-tests` to skip those steps. Use `--notes "text"` to provide release notes when publishing.
+
+`--publish` is only valid with `--env production`. Before publishing, the script checks for an existing `v<version>` release and refuses to overwrite it. Publishing creates the GitHub release and its tag through `gh release create`; it does not create a separate git tag.
+
+The zip is written to `dist/kh-images-optimizer-<version>.zip`, and its SHA256 is printed after a successful build. The release zip does not include the `scripts/` directory or other development-only files.
+
+> **Note:** `v1.5.0` already exists. Publishing another release requires bumping the `Version` header in `kh-images.php` first.
+
 ## Prerequisites
 
 - Node.js 18 or higher

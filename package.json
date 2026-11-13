@@ -20,6 +20,9 @@
 		"lint": "npm run lint:js && npm run lint:css",
 		"format": "wp-scripts format",
 		"package": "node scripts/package.js ${npm_config_suffix}",
+		"release:local": "node scripts/release-local.js --env local",
+		"release:staging": "node scripts/release-local.js --env staging",
+		"release:production": "node scripts/release-local.js --env production",
 		"sync-version": "node scripts/sync-version.js"
 	},
 	"browserslist": [
