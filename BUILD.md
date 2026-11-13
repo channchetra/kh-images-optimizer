@@ -32,7 +32,7 @@ The script lints JavaScript and CSS, runs the PHP smoke test, checks every PHP f
 
 The zip is written to `dist/kh-images-optimizer-<version>.zip`, and its SHA256 is printed after a successful build. The release zip does not include the `scripts/` directory or other development-only files.
 
-> **Note:** `v1.5.0` already exists. Publishing another release requires bumping the `Version` header in `kh-images.php` first.
+> **Note:** The release script never overwrites an existing tag. Bump the `Version` header in `kh-images.php` before publishing a new release.
 
 ## Prerequisites
 

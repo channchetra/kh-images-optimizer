@@ -5,7 +5,6 @@
 import { useEffect } from '@wordpress/element'
 import { Button } from '@wordpress/components'
 import { __, sprintf } from '@wordpress/i18n'
-import logo from '../assets/logo.webp'
 import {
 	AlertTriangle, CheckCircle2, ExternalLink, Gauge, Images,
 	RotateCcw, SlidersHorizontal, X,
@@ -41,7 +40,7 @@ export const Topbar = ( {
 			<div className="khimg-topbar__inner">
 				<div className="khimg-brand">
 					<span className="khimg-brand__tile">
-						<img className="khimg-brand__logo" src={ logo } alt="" height="22" />
+						<span className="khimg-brand__logo" aria-hidden="true" />
 					</span>
 					<span className="khimg-brand__text">
 						<span className="khimg-brand__name">{ __( 'KH Images', 'kh-images-optimizer' ) }</span>

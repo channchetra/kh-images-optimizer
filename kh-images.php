@@ -7,7 +7,7 @@
  * Author URI: https://sovichetra.com
  * License: GPLv2 or later
  * Text Domain: kh-images-optimizer
- * Version: 1.5.0
+ * Version: 1.5.1
  */
 
 // Exit if accessed directly.

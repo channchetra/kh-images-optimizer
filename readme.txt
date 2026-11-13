@@ -4,7 +4,7 @@ Tags: image, optimization, compress, convert, webp
 Requires at least: 7.0
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.5.0
+Stable tag: 1.5.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -208,6 +208,14 @@ Yes! The settings page includes a statistics dashboard showing:
 == Upgrade Notice ==
 
 == Changelog ==
+
+= 1.5.1 =
+
+* New: KH Images plugin icon
+* New: Redesigned dashboard
+* New: KH Offloader and KH Speed Engine compatibility
+* Fixed: Safer bulk optimize and restore operations
+* New: Cross-platform local release script
 
 = 1.4.1 =
 

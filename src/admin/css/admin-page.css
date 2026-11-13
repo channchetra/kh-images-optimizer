@@ -90,19 +90,17 @@ body.khimg-admin-app .khimg-brand__tile {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 84px;
+	width: 38px;
 	height: 38px;
-	padding: 0 8px;
 	border-radius: 10px;
 	background: #fff;
 }
 
 body.khimg-admin-app .khimg-brand__logo {
 	display: block;
-	width: auto;
-	max-width: 100%;
-	height: 22px;
-	object-fit: contain;
+	width: 26px;
+	height: 26px;
+	background: url(../js/page/assets/icon.svg) center / contain no-repeat;
 }
 
 body.khimg-admin-app .khimg-brand__text {
