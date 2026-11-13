@@ -1,0 +1,159 @@
+/**
+ * This handles the upload and select files in the following areas:
+ *
+ * Clicking the "Select Files" in the media manager
+ * Clicking the "Upload" button from the Image Block
+ * Clicking "Select Files" from the Media > Add Media File
+ */
+import { domReady } from '~khimg/shared/dom-ready'
+import { getFileConverter, requiresFileConversion } from '~khimg/shared/converters'
+import { watchForEditorIframe } from '~khimg/shared/util'
+import { saveMetadata } from '~khimg/shared/metadata-saver'
+import { ProgressModal } from './progress-modal'
+import { applyFilters } from '@wordpress/hooks'
+
+// Allowed locations to be able to select files.
+const ALLOWED_LOCATIONS = applyFilters( 'khimg.selectFiles.allowedLocations', [
+	'.components-form-file-upload', // Allow uploads to the image block
+	'.media-frame', // Allow uploads from the Media Manager
+	'.media-upload-form', // Allow uploads from the admin Media > Add Media File
+	'.moxie-shim', // Allow uploads from the admin Media > Library grid view
+] )
+
+// Add event listener to the Media Manager's drop zone
+function addSelectFilesListenerToFileUploads( targetDocument ) {
+	if ( ! targetDocument ) {
+		return
+	}
+
+	// Check if the target document has a body element available
+	if ( ! targetDocument.body ) {
+		return
+	}
+
+	const selectFilesListener = async event => {
+		if ( window.khimgSettings?.disableOptimization ) {
+			return
+		}
+
+		// Check if it's a file select.
+		if ( event.target.type !== 'file' ) {
+			return
+		}
+
+		// If this is a synthetic change event dispatched by us after conversion, skip conversion.
+		if ( event.__khimg_converted ) {
+			return
+		}
+
+		// Get the file converters for the incoming files.
+		const fileConverters = Array.from( event.target.files )
+			.map( file => getFileConverter( file ) )
+
+		// Do not continue if we do not need to convert any files.
+		if ( ! requiresFileConversion( fileConverters ) ) {
+			return
+		}
+
+		// TODO: We need filter this so that we will only override this on file
+		// selects that we want to, like the media manager picker or the image
+		// block uploader.
+		// Allow these locations to be able to select files.
+		const isAllowed = ALLOWED_LOCATIONS.some( selector => event.target.closest( selector ) )
+		if ( ! isAllowed ) {
+			return
+		}
+
+		// DEV NOTE: Previously, we did a return here if the browser didn't
+		// support webp (this worked for Safari), this makes it so that the
+		// normal processing happens instead of our "interceptor". But since we
+		// want to support a mix of video/audio/image files, we can't just stop
+		// the entire handling of the drop event. We now just return the
+		// original file but still proceed with our conversion logic.
+
+		// Prevent the default file handling
+		event.preventDefault()
+		event.stopPropagation()
+		event.stopImmediatePropagation()
+
+		// Cancel the conversion if the user closes the progress modal.
+		let userCancelled = false
+		const onCancel = () => {
+			userCancelled = true
+			fileConverters.forEach( converter => converter.cancel() )
+		}
+
+		// Show the progress modal
+		const progressModal = new ProgressModal( fileConverters, onCancel )
+		progressModal.open()
+
+		// Process and optimize each media file here,
+		// e.g. converting to webp, resizing, compressing, etc.
+		const optimizedResults = await Promise.all(
+			fileConverters.map( async converter => {
+				try {
+					const result = await converter.optimize()
+					if ( result.error ) {
+						// eslint-disable-next-line no-console
+						console.warn( result.error )
+					}
+					return result
+				} catch ( error ) {
+					// eslint-disable-next-line no-console
+					console.warn( error )
+					return { file: converter.file, metadata: null }
+				}
+			} )
+		)
+
+		if ( userCancelled ) {
+			progressModal.close()
+			return
+		}
+
+		// Extract files from results
+		const optimizedFiles = optimizedResults.map( result => result.file )
+		const conversionMetadata = optimizedResults.map( result => result.metadata )
+
+		// Create a DataTransfer to hold the optimized file
+		const dataTransfer = new DataTransfer()
+		optimizedFiles.forEach( file => {
+			dataTransfer.items.add( file )
+		} )
+
+		// Metadata is useful but must never block the upload.
+		try {
+			await saveMetadata( conversionMetadata )
+		} catch ( error ) {
+			// eslint-disable-next-line no-console
+			console.warn( '[KH Images] Metadata could not be saved; continuing with the upload.', error )
+		}
+
+		// Assign the files to the input element
+		event.target.files = dataTransfer.files
+
+		// Simulate the user selecting our converted file/s
+		const changeEvent = new Event( 'change', { bubbles: true } )
+		// Mark this event so we know conversion is already done
+		changeEvent.__khimg_converted = true // eslint-disable-line camelcase
+		event.target.dispatchEvent( changeEvent )
+
+		// Close when optimization finishes, including when we fall back to the original file after an error.
+		progressModal.close()
+	}
+
+	if ( ! targetDocument.body.__khimg_selectfiles_listener_attached ) {
+		targetDocument.body.addEventListener( 'change', selectFilesListener, true )
+		targetDocument.body.__khimg_selectfiles_listener_attached = true // eslint-disable-line camelcase
+	}
+}
+
+domReady( () => {
+	// Add listeners to the main document
+	addSelectFilesListenerToFileUploads( document )
+
+	// Watch for the editor iframe
+	watchForEditorIframe( iframeDocument => {
+		addSelectFilesListenerToFileUploads( iframeDocument )
+	} )
+} )
